@@ -3,7 +3,7 @@ const Experiencia = require("../models/Experiencia");
 const registrarExperiencia = async (req, res) => {
   try {
     const rutasImagenes = req.files ? req.files.map((file) => file.path) : [];
-    console.log(JSON.stringify(req.body, null, 2));
+
     const experiencia = new Experiencia({
       nombre: req.body.nombre,
       descripcion: req.body.descripcion,
@@ -63,11 +63,17 @@ const getExperiencia = async (req, res) => {
       fecha: fecha,
     });
 
+    const baseUrl = `${req.protocol}://${req.get("host")}`;
+
     if (!experiencia) {
       return res.status(404).json({
         success: false,
         message: "No se encontró la experiencia con ese nombre y fecha",
       });
+    }
+
+    if (Array.isArray(experiencia.fotos)) {
+      experiencia.fotos = experiencia.fotos.map(foto => `${baseUrl}/${foto}`);
     }
 
     res.json({

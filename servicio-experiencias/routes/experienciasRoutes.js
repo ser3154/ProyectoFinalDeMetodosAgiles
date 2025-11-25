@@ -18,10 +18,17 @@ router.post(
 );
 
 /**
- * @route   GET /api/experiencias
+ * @route   GET /api/experiencias/all
  * @desc    Obtener todas las experiencias
  * @access  Public
  */
 router.get("/all", experienciaController.getExperiencias);
+
+/**
+ * @route   GET /api/experiencias/encontrar
+ * @desc    Obtener una experiencia por su nombre y fecha
+ * @access  Public
+ */
+router.get("/encontrar", experienciaController.getExperiencia);
 
 module.exports = router;

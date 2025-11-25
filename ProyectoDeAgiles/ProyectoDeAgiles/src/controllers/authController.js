@@ -1,57 +1,3 @@
-const jwt = require('jsonwebtoken');
-const User = require('../models/User');
-
-/**
- * Registrar nuevo usuario - HU1
- */
-const register = async (req, res) => {
-  try {
-    const { email, password, role = 'visitante', nombre } = req.body;
-
-    // SUBTAREA 3: Validar que el correo no esté registrado
-    const existingUser = await User.findOne({ email });
-    
-    if (existingUser) {
-      return res.status(409).json({
-        success: false,
-        message: 'El correo electrónico ya está registrado'
-      });
-    }
-
-    // Crear usuario
-    const user = new User({
-      email,
-      password,
-      role,
-      nombre
-    });
-
-    await user.save();
-
-    res.status(201).json({
-      success: true,
-      message: 'Usuario registrado exitosamente.',
-      data: {
-        id: user._id,
-        email: user.email,
-        role: user.role,
-        nombre: user.nombre
-      }
-    });
-
-  } catch (error) {
-    console.error('Error en registro:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error al registrar usuario',
-      error: error.message
-    });
-  }
-};
-
-/**
- * Iniciar sesión - HU2
- */
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -65,14 +11,44 @@ const login = async (req, res) => {
       });
     }
 
+    // ver si esta bloqueado
+    if (user.isLocked()) {
+      const minutosRestantes = Math.ceil((user.lockUntil - Date.now()) / 60000);
+      return res.status(403).json({
+        success: false,
+        message: `Cuenta bloqueada temporalmente. Intenta de nuevo en ${minutosRestantes} minutos.`
+      });
+    }
+
     const isPasswordValid = await user.comparePassword(password);
 
+    // intentos
     if (!isPasswordValid) {
+      user.failedAttempts += 1;
+
+      // Máximo 3 intentos fallidos antes de bloqueo temporal (15 minutos)
+      if (user.failedAttempts >= 3) {
+        user.lockUntil = new Date(Date.now() + 15 * 60 * 1000); // 15 minutos
+        await user.save();
+
+        return res.status(403).json({
+          success: false,
+          message: 'Demasiados intentos fallidos. Cuenta bloqueada por 15 minutos.'
+        });
+      }
+
+      await user.save();
+
       return res.status(401).json({
         success: false,
         message: 'Credenciales inválidas'
       });
     }
+
+    // borrar contador con login correcto
+    user.failedAttempts = 0;
+    user.lockUntil = null;
+    await user.save();
 
     if (!user.is_active) {
       return res.status(403).json({
@@ -113,65 +89,4 @@ const login = async (req, res) => {
       error: error.message
     });
   }
-};
-
-/**
- * Obtener perfil del usuario autenticado
- */
-const getProfile = async (req, res) => {
-  try {
-    const user = await User.findById(req.user.id);
-
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: 'Usuario no encontrado'
-      });
-    }
-
-    res.status(200).json({
-      success: true,
-      data: user
-    });
-
-  } catch (error) {
-    console.error('Error al obtener perfil:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error al obtener perfil',
-      error: error.message
-    });
-  }
-};
-
-/**
- * Obtener todos los usuarios (solo para desarrollo/testing)
- */
-const getAllUsers = async (req, res) => {
-  try {
-    const users = await User.find()
-      .select('-password') // No incluir contraseñas
-      .sort({ createdAt: -1 }); // Más recientes primero
-
-    res.status(200).json({
-      success: true,
-      count: users.length,
-      data: users
-    });
-
-  } catch (error) {
-    console.error('Error al obtener usuarios:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error al obtener usuarios',
-      error: error.message
-    });
-  }
-};
-
-module.exports = {
-  register,
-  login,
-  getProfile,
-  getAllUsers
 };

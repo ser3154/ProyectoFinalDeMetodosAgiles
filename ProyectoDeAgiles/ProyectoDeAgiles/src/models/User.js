@@ -30,17 +30,27 @@ const userSchema = new mongoose.Schema({
   is_active: {
     type: Boolean,
     default: true
+  },
+
+  // para el bloqueo temporal
+  failedAttempts: {
+    type: Number,
+    default: 0
+  },
+  lockUntil: {
+    type: Date,
+    default: null
   }
+
 }, {
   timestamps: true
 });
 
-// Hash de contraseña antes de guardar
 userSchema.pre('save', async function(next) {
   if (!this.isModified('password')) {
     return next();
   }
-  
+
   try {
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
@@ -50,16 +60,20 @@ userSchema.pre('save', async function(next) {
   }
 });
 
-// Método para comparar contraseñas
+// comprar contraseña
 userSchema.methods.comparePassword = async function(candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
 };
 
-// No retornar contraseña ni token en JSON
+// bloqueado actulamente
+userSchema.methods.isLocked = function() {
+  return this.lockUntil && this.lockUntil > Date.now();
+};
+
+// limpiar JSON
 userSchema.methods.toJSON = function() {
   const obj = this.toObject();
   delete obj.password;
-  delete obj.verification_token;
   delete obj.__v;
   return obj;
 };

@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="es">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Detalles de la Experiencia</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+
+        <style>
+            .gallery-img {
+                transition: transform 0.3s ease;
+            }
+            .gallery-img:hover {
+                transform: scale(1.03);
+            }
+            .badge {
+                display: inline-block;
+                padding: 4px 10px;
+                border-radius: 6px;
+                font-size: 12px;
+                font-weight: 600;
+            }
+        </style>
+    </head>
+
+    <body class="bg-gray-50">
+        <nav class="bg-white shadow-sm">
+            <div class="max-w-7xl mx-auto px-4 py-4">
+                <h1 class="text-2xl font-bold text-blue-600">
+                    🌍 Experiencias Turísticas
+                </h1>
+            </div>
+        </nav>
+
+        <div class="max-w-7xl mx-auto px-4 py-10">
+            <div class="mb-8">
+                <h2
+                    id="exp-title"
+                    class="text-3xl font-bold text-gray-900 mb-2"
+                >
+                    Cargando...
+                </h2>
+                <p id="exp-location" class="text-gray-600 text-sm">
+                    Buscando ubicación...
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="lg:col-span-2">
+                    <div id="exp-gallery" class="grid grid-cols-2 gap-4"></div>
+                </div>
+
+                <div
+                    class="bg-white p-6 rounded-lg shadow-sm border border-gray-200"
+                >
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">
+                        Información General
+                    </h3>
+
+                    <p id="exp-description" class="text-gray-700 text-sm mb-4">
+                        Cargando descripción...
+                    </p>
+
+                    <div class="mb-4">
+                        <p
+                            class="text-2xl font-bold text-blue-600"
+                            id="exp-price"
+                        >
+                            $0
+                        </p>
+                        <p
+                            class="text-gray-600 text-sm flex items-center gap-2"
+                        >
+                            <span
+                                class="badge bg-blue-100 text-blue-800"
+                                id="exp-date"
+                                >📅 -- / -- / ----</span
+                            >
+                        </p>
+                    </div>
+
+                    <div class="mb-6">
+                        <p class="text-gray-700 font-medium mb-1">
+                            Cupos disponibles:
+                        </p>
+                        <p id="exp-cupos" class="font-semibold text-green-600">
+                            Cargando...
+                        </p>
+                    </div>
+
+                    <button
+                        id="btn-reservar"
+                        class="w-full bg-blue-600 text-white py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition hidden"
+                    >
+                        Reservar ahora
+                    </button>
+                </div>
+            </div>
+
+            <div
+                class="bg-white mt-12 p-6 rounded-lg shadow-sm border border-gray-200"
+            >
+                <h3 class="text-xl font-semibold text-gray-900 mb-4">
+                    Proveedor
+                </h3>
+
+                <div class="flex items-center gap-4">
+                    <img
+                        id="provider-img"
+                        class="w-16 h-16 rounded-full object-cover"
+                        src="https://via.placeholder.com/80"
+                        alt="Proveedor"
+                    />
+                    <div>
+                        <p
+                            id="provider-name"
+                            class="font-semibold text-gray-900"
+                        >
+                            Cargando...
+                        </p>
+                        <p id="provider-rating" class="text-yellow-600 text-sm">
+                            ★ ★ ★ ★ ★
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div
+                class="bg-white mt-12 p-6 rounded-lg shadow-sm border border-gray-200"
+            >
+                <h3 class="text-xl font-semibold text-gray-900 mb-4">
+                    Ubicación
+                </h3>
+
+                <div class="w-full h-64 rounded-lg overflow-hidden">
+                    <iframe
+                        id="exp-map"
+                        class="w-full h-full"
+                        src=""
+                        loading="lazy"
+                        allowfullscreen
+                    >
+                    </iframe>
+                </div>
+            </div>
+
+            <div
+                class="bg-white mt-12 p-6 rounded-lg shadow-sm border border-gray-200"
+            >
+                <h3 class="text-xl font-semibold text-gray-900 mb-6">
+                    Reseñas de Visitantes
+                </h3>
+
+                <div id="reviews-container" class="space-y-4">
+                    <p class="text-gray-500 text-sm">Cargando reseñas...</p>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            const API_URL = "http://localhost:3002/api/experiencias/encontrar";
+
+            async function cargarExperiencia() {
+                const params = new URLSearchParams(window.location.search);
+
+                const nombre = params.get("nombre");
+                const fecha = params.get("fecha");
+
+                if (!nombre || !fecha) {
+                    document.body.innerHTML =
+                        "<p class='text-center mt-20 text-red-600'>Faltan parámetros en la URL.</p>";
+                    return;
+                }
+
+                const response = await fetch(
+                    `${API_URL}?nombre=${nombre}&fecha=${fecha}`,
+                );
+                const data = await response.json();
+
+                if (!data.success) {
+                    document.body.innerHTML =
+                        "<p class='text-center mt-20 text-red-600'>Experiencia no encontrada.</p>";
+                    return;
+                }
+
+                const exp = data.data;
+
+                document.getElementById("exp-title").textContent = exp.nombre;
+                document.getElementById("exp-location").textContent =
+                    exp.ubicacion;
+                document.getElementById("exp-description").textContent =
+                    exp.descripcion;
+                document.getElementById("exp-price").textContent =
+                    `$${exp.precio}`;
+                document.getElementById("exp-date").textContent =
+                    "📅 " + new Date(exp.fecha).toLocaleDateString("es-MX");
+
+                const cuposTexto = `${exp.cuposDisponibles ?? exp.cupo}/${exp.cupo} disponibles`;
+                document.getElementById("exp-cupos").textContent = cuposTexto;
+
+                if ((exp.cuposDisponibles ?? exp.cupo) > 0) {
+                    document
+                        .getElementById("btn-reservar")
+                        .classList.remove("hidden");
+                }
+
+                const gallery = document.getElementById("exp-gallery");
+                gallery.innerHTML = "";
+                exp.fotos.forEach((url) => {
+                    gallery.innerHTML += `
+                    <img src="${url}" class="gallery-img rounded-lg shadow-sm border object-cover h-48 w-full">
+                `;
+                });
+
+                document.getElementById("provider-name").textContent =
+                    exp.proveedor?.nombre || "Proveedor desconocido";
+                if (exp.proveedor?.foto)
+                    document.getElementById("provider-img").src =
+                        exp.proveedor.foto;
+
+                document.getElementById("provider-rating").textContent =
+                    "⭐".repeat(exp.proveedor?.calificacion || 5);
+
+                const reviewsDiv = document.getElementById("reviews-container");
+                reviewsDiv.innerHTML = "";
+
+                if (!exp.resenas || exp.resenas.length === 0) {
+                    reviewsDiv.innerHTML = `<p class="text-gray-500 text-sm">Aún no hay reseñas.</p>`;
+                } else {
+                    exp.resenas.forEach((r) => {
+                        reviewsDiv.innerHTML += `
+                        <div class="border border-gray-200 rounded-lg p-4 shadow-sm">
+                            <p class="font-semibold text-gray-900">${r.usuario}</p>
+                            <p class="text-yellow-600 text-sm mb-1">⭐ ${r.calificacion}</p>
+                            <p class="text-gray-700 text-sm">${r.comentario}</p>
+                        </div>
+                    `;
+                    });
+                }
+            }
+
+            cargarExperiencia();
+        </script>
+    </body>
+</html>

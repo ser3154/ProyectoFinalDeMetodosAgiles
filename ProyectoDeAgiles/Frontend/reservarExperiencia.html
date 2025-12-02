@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reservar Experiencia | Experiencias Turísticas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+    <!-- Barra de navegación -->
+    <nav class="bg-white shadow">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="text-2xl font-bold text-blue-600">
+                🌍 Experiencias Turísticas
+            </div>
+            <div class="flex gap-3">
+                <a href="index.html" class="text-sm px-3 py-2 text-gray-600 hover:text-blue-600">
+                    <i class="fas fa-home mr-1"></i> Inicio
+                </a>
+                <a href="mis-reservas.html" class="text-sm px-3 py-2 text-gray-600 hover:text-blue-600">
+                    <i class="fas fa-calendar-alt mr-1"></i> Mis reservas
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-6xl mx-auto p-4 md:p-6">
+        <!-- Encabezado -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">Reservar experiencia</h1>
+            <p class="text-gray-600">
+                Completa los siguientes pasos para asegurar tu lugar en esta experiencia única.
+            </p>
+        </div>
+
+        <div class="flex flex-col lg:flex-row gap-6">
+            <!-- Panel izquierdo: Información de la experiencia -->
+            <div class="lg:w-2/3">
+                <div class="bg-white rounded-xl shadow p-6 mb-6">
+                    <h2 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                        <i class="fas fa-info-circle text-blue-500 mr-2"></i> Información de la experiencia
+                    </h2>
+                    
+                    <div class="flex flex-col md:flex-row gap-6">
+                        <!-- Imagen de la experiencia -->
+                        <div class="md:w-2/5">
+                            <div class="h-64 bg-gradient-to-r from-blue-100 to-indigo-200 rounded-xl overflow-hidden">
+                                <div class="h-full flex items-center justify-center">
+                                    <i class="fas fa-mountain text-5xl text-blue-400"></i>
+                                </div>
+                                <div class="bg-gradient-to-t from-black/60 to-transparent p-4 relative -mt-16 text-white">
+                                    <span class="bg-blue-600 text-white text-xs font-semibold px-3 py-1 rounded-full">Aventura</span>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-4 grid grid-cols-3 gap-2">
+                                <div class="h-16 bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-image text-blue-400"></i>
+                                </div>
+                                <div class="h-16 bg-gradient-to-r from-green-50 to-green-100 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-image text-green-400"></i>
+                                </div>
+                                <div class="h-16 bg-gradient-to-r from-amber-50 to-amber-100 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-image text-amber-400"></i>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Detalles de la experiencia -->
+                        <div class="md:w-3/5">
+                            <h3 class="text-2xl font-bold text-gray-900 mb-2" id="experienceName">Tour por el desierto</h3>
+                            <div class="flex items-center text-gray-600 mb-4">
+                                <i class="fas fa-map-marker-alt mr-2"></i>
+                                <span id="experienceLocation">Chihuahua, México</span>
+                            </div>
+                            
+                            <p class="text-gray-700 mb-4" id="experienceDescription">
+                                Experiencia guiada a través de dunas desérticas con atardecer incluido y cena tradicional. 
+                                Incluye transporte desde la ciudad, equipo de seguridad y guía bilingüe.
+                            </p>
+                            
+                            <div class="grid grid-cols-2 gap-4 mb-4">
+                                <div>
+                                    <div class="text-sm font-medium text-gray-500">Proveedor</div>
+                                    <div class="font-medium text-gray-900">Aventura MX</div>
+                                </div>
+                                <div>
+                                    <div class="text-sm font-medium text-gray-500">Duración</div>
+                                    <div class="font-medium text-gray-900">6 horas</div>
+                                </div>
+                                <div>
+                                    <div class="text-sm font-medium text-gray-500">Dificultad</div>
+                                    <div class="font-medium text-gray-900">Media</div>
+                                </div>
+                                <div>
+                                    <div class="text-sm font-medium text-gray-500">Idiomas</div>
+                                    <div class="font-medium text-gray-900">Español, Inglés</div>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-4 p-4 bg-blue-50 rounded-lg">
+                                <div class="flex justify-between items-center">
+                                    <div>
+                                        <div class="text-sm font-medium text-gray-500">Precio por persona</div>
+                                        <div class="text-2xl font-bold text-gray-900">$<span id="experiencePrice">1,500</span> MXN</div>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="text-sm font-medium text-gray-500">Cupos disponibles</div>
+                                        <div class="text-xl font-bold text-gray-900">
+                                            <span id="availableSpots">8</span> / <span id="totalCapacity">12</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Panel de reserva -->
+                <div class="bg-white rounded-xl shadow p-6">
+                    <h2 class="text-xl font-bold text-gray-900 mb-6 flex items-center">
+                        <i class="fas fa-calendar-plus text-blue-500 mr-2"></i> Detalles de la reserva
+                    </h2>
+                    
+                    <!-- Paso 1: Seleccionar fecha y personas -->
+                    <div class="mb-8">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Paso 1: Selecciona fecha y número de personas</h3>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Selección de fecha -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    <i class="fas fa-calendar-alt mr-1"></i> Fecha de la experiencia
+                                </label>
+                                <input 
+                                    type="date" 
+                                    id="experienceDate" 
+                                    class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    min="2025-01-01"
+                                    value="2025-11-10"
+                                >
+                                <p class="text-xs text-gray-500 mt-2">Las experiencias están disponibles los fines de semana</p>
+                            </div>
+                            
+                            <!-- Selección de número de personas -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    <i class="fas fa-users mr-1"></i> Número de personas
+                                </label>
+                                <div class="flex items-center">
+                                    <button 
+                                        type="button" 
+                                        id="decrementPeople" 
+                                        class="bg-gray-100 text-gray-700 w-10 h-10 rounded-l-lg flex items-center justify-center hover:bg-gray-200"
+                                    >
+                                        <i class="fas fa-minus"></i>
+                                    </button>
+                                    <input 
+                                        type="number" 
+                                        id="peopleCount" 
+                                        min="1" 
+                                        max="12" 
+                                        value="1" 
+                                        class="w-16 text-center border-y border-gray-300 h-10 text-lg font-medium"
+                                        readonly
+                                    >
+                                    <button 
+                                        type="button" 
+                                        id="incrementPeople" 
+                                        class="bg-gray-100 text-gray-700 w-10 h-10 rounded-r-lg flex items-center justify-center hover:bg-gray-200"
+                                    >
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                    <div class="ml-4">
+                                        <div class="text-sm text-gray-700">Máximo: <span id="maxPeople" class="font-semibold">8</span> personas</div>
+                                        <div id="availabilityMessage" class="text-xs text-green-600 font-medium"></div>
+                                    </div>
+                                </div>
+                                <div id="availabilityError" class="text-xs text-red-600 mt-2 hidden">
+                                    <i class="fas fa-exclamation-circle mr-1"></i> No hay suficientes cupos disponibles para esta fecha
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Paso 2: Información de contacto -->
+                    <div class="mb-8">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Paso 2: Información de contacto</h3>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Nombre completo</label>
+                                <input 
+                                    type="text" 
+                                    id="fullName" 
+                                    class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    placeholder="Ej: Juan Pérez"
+                                    value="Juan Pérez"
+                                >
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Correo electrónico</label>
+                                <input 
+                                    type="email" 
+                                    id="email" 
+                                    class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    placeholder="ejemplo@correo.com"
+                                    value="juan@example.com"
+                                >
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Teléfono</label>
+                                <input 
+                                    type="tel" 
+                                    id="phone" 
+                                    class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    placeholder="+52 123 456 7890"
+                                    value="+52 123 456 7890"
+                                >
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Requerimientos especiales</label>
+                                <input 
+                                    type="text" 
+                                    id="specialRequirements" 
+                                    class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    placeholder="Alergias, movilidad reducida, etc."
+                                >
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Paso 3: Resumen y pago -->
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Paso 3: Resumen y pago</h3>
+                        
+                        <div class="bg-gray-50 rounded-lg p-6 mb-6">
+                            <h4 class="font-bold text-gray-900 mb-4">Resumen de tu reserva</h4>
+                            
+                            <div class="space-y-3">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Experiencia:</span>
+                                    <span class="font-medium" id="summaryExperience">Tour por el desierto</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Fecha:</span>
+                                    <span class="font-medium" id="summaryDate">10 Nov 2025</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Personas:</span>
+                                    <span class="font-medium" id="summaryPeople">1 persona</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Precio unitario:</span>
+                                    <span class="font-medium">$1,500 MXN</span>
+                                </div>
+                                <div class="pt-3 border-t border-gray-300">
+                                    <div class="flex justify-between text-lg">
+                                        <span class="font-bold text-gray-900">Total a pagar:</span>
+                                        <span class="font-bold text-blue-600" id="summaryTotal">$1,500 MXN</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                            <div class="text-sm text-gray-600 flex items-start">
+                                <i class="fas fa-shield-alt text-blue-500 text-lg mr-2 mt-1"></i>
+                                <div>
+                                    <p class="font-medium">Tu reserva está siendo procesada</p>
+                                    <p>Los cupos se reservan temporalmente por <span class="font-semibold">10 minutos</span> durante el proceso de pago.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex gap-4">
+                                <button 
+                                    id="cancelReservation" 
+                                    class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium"
+                                >
+                                    Cancelar
+                                </button>
+                                <button 
+                                    id="proceedToPayment" 
+                                    class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium flex items-center"
+                                >
+                                    <i class="fas fa-lock mr-2"></i> Proceder al pago
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Panel derecho: Resumen y temporizador -->
+            <div class="lg:w-1/3">
+                <div class="sticky top-6">
+                    <!-- Temporizador de reserva -->
+                    <div class="bg-white rounded-xl shadow p-6 mb-6">
+                        <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                            <i class="fas fa-clock text-amber-500 mr-2"></i> Tu reserva está en proceso
+                        </h3>
+                        
+                        <div class="text-center mb-4">
+                            <div class="text-sm text-gray-600 mb-2">Tiempo restante para completar el pago:</div>
+                            <div id="reservationTimer" class="text-3xl font-bold text-blue-600">10:00</div>
+                        </div>
+                        
+                        <div class="text-center">
+                            <div class="text-xs text-gray-500">
+                                Si no completas el pago en <span class="font-semibold">10 minutos</span>, los cupos se liberarán automáticamente.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Resumen rápido -->
+                    <div class="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl shadow p-6 text-white">
+                        <h3 class="text-lg font-bold mb-4">Resumen rápido</h3>
+                        
+                        <div class="space-y-3 mb-6">
+                            <div class="flex justify-between">
+                                <span>Experiencia:</span>
+                                <span class="font-medium" id="quickSummaryExperience">Tour desierto</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Fecha:</span>
+                                <span class="font-medium" id="quickSummaryDate">10 Nov 2025</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Personas:</span>
+                                <span class="font-medium" id="quickSummaryPeople">1</span>
+                            </div>
+                            <div class="pt-3 border-t border-blue-400">
+                                <div class="flex justify-between text-lg font-bold">
+                                    <span>Total:</span>
+                                    <span id="quickSummaryTotal">$1,500 MXN</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="text-sm text-blue-100">
+                            <i class="fas fa-info-circle mr-1"></i> Al completar el pago, recibirás un correo con los detalles de tu reserva.
+                        </div>
+                    </div>
+                    
+                    <!-- Información importante -->
+                    <div class="bg-white rounded-xl shadow p-6 mt-6">
+                        <h3 class="text-lg font-bold text-gray-900 mb-4">Información importante</h3>
+                        
+                        <div class="space-y-4">
+                            <div class="flex items-start">
+                                <i class="fas fa-undo text-blue-500 text-lg mr-3 mt-1"></i>
+                                <div>
+                                    <h4 class="font-medium text-gray-900">Política de cancelación</h4>
+                                    <p class="text-sm text-gray-600">Cancelación gratuita hasta 48 horas antes. Reembolso del 50% después.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-start">
+                                <i class="fas fa-umbrella text-blue-500 text-lg mr-3 mt-1"></i>
+                                <div>
+                                    <h4 class="font-medium text-gray-900">Seguro incluido</h4>
+                                    <p class="text-sm text-gray-600">Todas nuestras experiencias incluyen seguro básico de accidentes.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-start">
+                                <i class="fas fa-headset text-blue-500 text-lg mr-3 mt-1"></i>
+                                <div>
+                                    <h4 class="font-medium text-gray-900">Soporte 24/7</h4>
+                                    <p class="text-sm text-gray-600">Nuestro equipo está disponible para ayudarte en cualquier momento.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal de confirmación de pago -->
+    <div id="paymentModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-xl shadow-lg max-w-md w-full">
+            <div class="px-6 py-4 border-b flex justify-between items-center">
+                <h3 class="text-xl font-bold text-gray-900">Procesar pago</h3>
+                <button onclick="closePaymentModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div class="p-6">
+                <div class="mb-6">
+                    <div class="text-center mb-4">
+                        <i class="fas fa-credit-card text-4xl text-blue-500 mb-3"></i>
+                        <h4 class="text-lg font-bold text-gray-900">Monto a pagar</h4>
+                        <div class="text-3xl font-bold text-blue-600 my-3" id="paymentAmount">$1,500 MXN</div>
+                        <p class="text-sm text-gray-600">Reserva para <span id="paymentPeople">1 persona</span></p>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Número de tarjeta</label>
+                            <input 
+                                type="text" 
+                                id="cardNumber" 
+                                class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                placeholder="1234 5678 9012 3456"
+                                maxlength="19"
+                            >
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Fecha de expiración</label>
+                                <input 
+                                    type="text" 
+                                    id="cardExpiry" 
+                                    class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    placeholder="MM/AA"
+                                    maxlength="5"
+                                >
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">CVV</label>
+                                <input 
+                                    type="text" 
+                                    id="cardCVV" 
+                                    class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    placeholder="123"
+                                    maxlength="3"
+                                >
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Nombre en la tarjeta</label>
+                            <input 
+                                type="text" 
+                                id="cardName" 
+                                class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                placeholder="Como aparece en la tarjeta"
+                            >
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex items-center mb-6">
+                    <input type="checkbox" id="saveCard" class="mr-3">
+                    <label for="saveCard" class="text-sm text-gray-700">Guardar esta tarjeta para futuras compras</label>
+                </div>
+                
+                <div class="text-xs text-gray-500 mb-6">
+                    <i class="fas fa-lock mr-1"></i> Tu información de pago está protegida con encriptación de 256-bit.
+                </div>
+                
+                <div class="flex justify-end space-x-3">
+                    <button onclick="closePaymentModal()" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium">
+                        Cancelar
+                    </button>
+                    <button onclick="processPayment()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">
+                        <i class="fas fa-lock mr-2"></i> Pagar ahora
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de confirmación de reserva -->
+    <div id="confirmationModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-xl shadow-lg max-w-md w-full">
+            <div class="p-6 text-center">
+                <div class="mb-6">
+                    <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-check text-3xl text-green-600"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-2">¡Reserva confirmada!</h3>
+                    <p class="text-gray-600 mb-4">
+                        Tu reserva ha sido procesada exitosamente. Hemos enviado un correo con todos los detalles.
+                    </p>
+                    <div class="bg-gray-50 rounded-lg p-4 text-left">
+                        <div class="font-medium text-gray-900 mb-2">Detalles de la reserva:</div>
+                        <div class="text-sm text-gray-700">
+                            <div class="flex justify-between mb-1">
+                                <span>Código de reserva:</span>
+                                <span class="font-semibold">RES-2025-789456</span>
+                            </div>
+                            <div class="flex justify-between mb-1">
+                                <span>Experiencia:</span>
+                                <span class="font-semibold">Tour por el desierto</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Fecha:</span>
+                                <span class="font-semibold">10 Nov 2025</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex flex-col space-y-3">
+                    <a href="mis-reservas.html" class="px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">
+                        <i class="fas fa-calendar-alt mr-2"></i> Ver mis reservas
+                    </a>
+                    <button onclick="closeConfirmationModal()" class="px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium">
+                        Seguir explorando
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        let reservationTimer = 600; // 10 minutos en segundos
+        let timerInterval;
+        let reservedSpots = 0;
+        const maxCapacity = 12;
+        let availableSpots = 8;
+        const pricePerPerson = 1500;
+        
+        // Inicializar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeReservation();
+            updateReservationSummary();
+            startReservationTimer();
+            
+            // Manejar clics en botones de incremento/decremento
+            document.getElementById('incrementPeople').addEventListener('click', incrementPeople);
+            document.getElementById('decrementPeople').addEventListener('click', decrementPeople);
+            
+            // Manejar cambio en fecha
+            document.getElementById('experienceDate').addEventListener('change', updateAvailability);
+            
+            // Manejar botones principales
+            document.getElementById('proceedToPayment').addEventListener('click', openPaymentModal);
+            document.getElementById('cancelReservation').addEventListener('click', cancelReservation);
+            
+            // Formatear inputs de tarjeta
+            document.getElementById('cardNumber').addEventListener('input', formatCardNumber);
+            document.getElementById('cardExpiry').addEventListener('input', formatCardExpiry);
+            document.getElementById('cardCVV').addEventListener('input', formatCardCVV);
+            
+            // Cerrar modales haciendo clic fuera
+            document.getElementById('paymentModal').addEventListener('click', function(e) {
+                if (e.target === this) closePaymentModal();
+            });
+            
+            document.getElementById('confirmationModal').addEventListener('click', function(e) {
+                if (e.target === this) closeConfirmationModal();
+            });
+        });
+        
+        // Inicializar la reserva
+        function initializeReservation() {
+            // Actualizar cupos disponibles
+            document.getElementById('availableSpots').textContent = availableSpots;
+            document.getElementById('totalCapacity').textContent = maxCapacity;
+            document.getElementById('maxPeople').textContent = availableSpots;
+            
+            // Configurar máximo en el input de personas
+            document.getElementById('peopleCount').max = availableSpots;
+            
+            // Mostrar mensaje de disponibilidad
+            updateAvailabilityMessage();
+        }
+        
+        // Actualizar disponibilidad según fecha seleccionada
+        function updateAvailability() {
+            const date = document.getElementById('experienceDate').value;
+            
+            // Simular disponibilidad variable por fecha
+            // En una implementación real, esto vendría de una API
+            if (date === '2025-11-10') {
+                availableSpots = 8;
+            } else if (date === '2025-11-11') {
+                availableSpots = 3;
+            } else if (date === '2025-11-12') {
+                availableSpots = 0;
+            } else {
+                availableSpots = 5; // Valor por defecto para otras fechas
+            }
+            
+            document.getElementById('availableSpots').textContent = availableSpots;
+            document.getElementById('maxPeople').textContent = availableSpots;
+            
+            // Ajustar el número de personas si es necesario
+            const peopleCount = parseInt(document.getElementById('peopleCount').value);
+            if (peopleCount > availableSpots) {
+                document.getElementById('peopleCount').value = availableSpots;
+                document.getElementById('availabilityError').classList.remove('hidden');
+            } else {
+                document.getElementById('availabilityError').classList.add('hidden');
+            }
+            
+            updateAvailabilityMessage();
+            updateReservationSummary();
+        }
+        
+        // Actualizar mensaje de disponibilidad
+        function updateAvailabilityMessage() {
+            const availabilityMessage = document.getElementById('availabilityMessage');
+            const peopleCount = parseInt(document.getElementById('peopleCount').value);
+            
+            if (availableSpots === 0) {
+                availabilityMessage.textContent = "No hay cupos disponibles para esta fecha";
+                availabilityMessage.classList.remove('text-green-600');
+                availabilityMessage.classList.add('text-red-600');
+            } else if (availableSpots <= 3) {
+                availabilityMessage.textContent = `¡Solo quedan ${availableSpots} cupos!`;
+                availabilityMessage.classList.remove('text-green-600');
+                availabilityMessage.classList.add('text-amber-600');
+            } else {
+                availabilityMessage.textContent = "Hay cupos disponibles";
+                availabilityMessage.classList.remove('text-amber-600', 'text-red-600');
+                availabilityMessage.classList.add('text-green-600');
+            }
+            
+            // Actualizar el máximo en el input
+            document.getElementById('peopleCount').max = availableSpots;
+        }
+        
+        // Incrementar número de personas
+        function incrementPeople() {
+            const peopleInput = document.getElementById('peopleCount');
+            let value = parseInt(peopleInput.value);
+            
+            if (value < availableSpots) {
+                peopleInput.value = value + 1;
+                document.getElementById('availabilityError').classList.add('hidden');
+                updateAvailabilityMessage();
+                updateReservationSummary();
+            }
+        }
+        
+        // Decrementar número de personas
+        function decrementPeople() {
+            const peopleInput = document.getElementById('peopleCount');
+            let value = parseInt(peopleInput.value);
+            
+            if (value > 1) {
+                peopleInput.value = value - 1;
+                updateAvailabilityMessage();
+                updateReservationSummary();
+            }
+        }
+        
+        // Actualizar resumen de la reserva
+        function updateReservationSummary() {
+            const peopleCount = parseInt(document.getElementById('peopleCount').value);
+            const date = document.getElementById('experienceDate').value;
+            
+            // Formatear fecha
+            const dateObj = new Date(date);
+            const formattedDate = dateObj.toLocaleDateString('es-ES', { 
+                day: 'numeric', 
+                month: 'short', 
+                year: 'numeric' 
+            });
+            
+            // Calcular total
+            const total = peopleCount * pricePerPerson;
+            const formattedTotal = total.toLocaleString('es-MX');
+            
+            // Actualizar resumen principal
+            document.getElementById('summaryDate').textContent = formattedDate;
+            document.getElementById('summaryPeople').textContent = `${peopleCount} ${peopleCount === 1 ? 'persona' : 'personas'}`;
+            document.getElementById('summaryTotal').textContent = `$${formattedTotal} MXN`;
+            
+            // Actualizar resumen rápido
+            document.getElementById('quickSummaryDate').textContent = formattedDate;
+            document.getElementById('quickSummaryPeople').textContent = peopleCount;
+            document.getElementById('quickSummaryTotal').textContent = `$${formattedTotal} MXN`;
+            
+            // Actualizar monto en modal de pago
+            document.getElementById('paymentAmount').textContent = `$${formattedTotal} MXN`;
+            document.getElementById('paymentPeople').textContent = `${peopleCount} ${peopleCount === 1 ? 'persona' : 'personas'}`;
+        }
+        
+        // Temporizador de reserva
+        function startReservationTimer() {
+            clearInterval(timerInterval);
+            reservationTimer = 600; // Reiniciar a 10 minutos
+            
+            timerInterval = setInterval(function() {
+                reservationTimer--;
+                
+                const minutes = Math.floor(reservationTimer / 60);
+                const seconds = reservationTimer % 60;
+                
+                document.getElementById('reservationTimer').textContent = 
+                    `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+                // Si el tiempo se agota
+                if (reservationTimer <= 0) {
+                    clearInterval(timerInterval);
+                    showReservationExpired();
+                }
+            }, 1000);
+        }
+        
+        // Mostrar que la reserva expiró
+        function showReservationExpired() {
+            alert("Tu reserva ha expirado. Los cupos han sido liberados. Por favor, inicia una nueva reserva.");
+            // En una implementación real, redirigirías o reiniciarías el proceso
+        }
+        
+        // Abrir modal de pago
+        function openPaymentModal() {
+            // Validar información básica antes de abrir el modal
+            const fullName = document.getElementById('fullName').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+            
+            if (!fullName || !email || !phone) {
+                alert("Por favor completa toda la información de contacto antes de proceder al pago.");
+                return;
+            }
+            
+            // Validar que haya cupos disponibles
+            const peopleCount = parseInt(document.getElementById('peopleCount').value);
+            if (peopleCount > availableSpots) {
+                document.getElementById('availabilityError').classList.remove('hidden');
+                return;
+            }
+            
+            // Simular reserva temporal de cupos
+            reservedSpots = peopleCount;
+            availableSpots -= reservedSpots;
+            document.getElementById('availableSpots').textContent = availableSpots;
+            document.getElementById('maxPeople').textContent = availableSpots;
+            
+            // Mostrar modal de pago
+            document.getElementById('paymentModal').classList.remove('hidden');
+            document.getElementById('paymentModal').classList.add('flex');
+            
+            // Reiniciar temporizador (en una implementación real, esto se haría después de reservar los cupos)
+            startReservationTimer();
+        }
+        
+        // Cerrar modal de pago
+        function closePaymentModal() {
+            document.getElementById('paymentModal').classList.add('hidden');
+            document.getElementById('paymentModal').classList.remove('flex');
+            
+            // Liberar cupos reservados si se cancela el pago
+            if (reservedSpots > 0) {
+                availableSpots += reservedSpots;
+                reservedSpots = 0;
+                document.getElementById('availableSpots').textContent = availableSpots;
+                document.getElementById('maxPeople').textContent = availableSpots;
+                updateAvailabilityMessage();
+            }
+            
+            // Limpiar formulario de pago
+            document.getElementById('cardNumber').value = '';
+            document.getElementById('cardExpiry').value = '';
+            document.getElementById('cardCVV').value = '';
+            document.getElementById('cardName').value = '';
+            document.getElementById('saveCard').checked = false;
+        }
+        
+        // Procesar pago
+        function processPayment() {
+            // Validar datos de tarjeta (simulación básica)
+            const cardNumber = document.getElementById('cardNumber').value.replace(/\s/g, '');
+            const cardExpiry = document.getElementById('cardExpiry').value;
+            const cardCVV = document.getElementById('cardCVV').value;
+            const cardName = document.getElementById('cardName').value.trim();
+            
+            if (!cardNumber || cardNumber.length < 16) {
+                alert("Por favor ingresa un número de tarjeta válido");
+                return;
+            }
+            
+            if (!cardExpiry || cardExpiry.length < 5) {
+                alert("Por favor ingresa una fecha de expiración válida (MM/AA)");
+                return;
+            }
+            
+            if (!cardCVV || cardCVV.length < 3) {
+                alert("Por favor ingresa un CVV válido");
+                return;
+            }
+            
+            if (!cardName) {
+                alert("Por favor ingresa el nombre como aparece en la tarjeta");
+                return;
+            }
+            
+            // Simular procesamiento de pago
+            document.getElementById('paymentModal').classList.add('hidden');
+            document.getElementById('paymentModal').classList.remove('flex');
+            
+            // Mostrar mensaje de procesamiento
+            setTimeout(function() {
+                // Mostrar modal de confirmación
+                document.getElementById('confirmationModal').classList.remove('hidden');
+                document.getElementById('confirmationModal').classList.add('flex');
+                
+                // Detener temporizador
+                clearInterval(timerInterval);
+            }, 1000);
+        }
+        
+        // Cerrar modal de confirmación
+        function closeConfirmationModal() {
+            document.getElementById('confirmationModal').classList.add('hidden');
+            document.getElementById('confirmationModal').classList.remove('flex');
+            
+            // Redirigir a la página principal (simulación)
+            window.location.href = "index.html";
+        }
+        
+        // Cancelar reserva
+        function cancelReservation() {
+            if (confirm("¿Estás seguro de que quieres cancelar esta reserva? Se liberarán los cupos reservados.")) {
+                // Liberar cupos reservados
+                if (reservedSpots > 0) {
+                    availableSpots += reservedSpots;
+                    reservedSpots = 0;
+                    document.getElementById('availableSpots').textContent = availableSpots;
+                    document.getElementById('maxPeople').textContent = availableSpots;
+                }
+                
+                // Detener temporizador
+                clearInterval(timerInterval);
+                
+                // Redirigir a la página principal
+                window.location.href = "index.html";
+            }
+        }
+        
+        // Formatear número de tarjeta
+        function formatCardNumber(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            value = value.replace(/(\d{4})/g, '$1 ').trim();
+            value = value.substring(0, 19); // Máximo 16 dígitos + 3 espacios
+            e.target.value = value;
+        }
+        
+        // Formatear fecha de expiración
+        function formatCardExpiry(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length >= 2) {
+                value = value.substring(0, 2) + '/' + value.substring(2, 4);
+            }
+            e.target.value = value.substring(0, 5);
+        }
+        
+        // Formatear CVV
+        function formatCardCVV(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            e.target.value = value.substring(0, 3);
+        }
+    </script>
+</body>
+</html>

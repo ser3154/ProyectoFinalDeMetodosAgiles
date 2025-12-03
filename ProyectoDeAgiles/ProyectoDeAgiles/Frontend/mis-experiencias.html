@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="es">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <title>Mis Reservas - Panel Proveedor | Experiencias Turísticas</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+            rel="stylesheet"
+        />
+    </head>
+    <body
+        class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen font-sans"
+    >
+        <nav class="bg-white shadow sticky top-0 z-50">
+            <div
+                class="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center"
+            >
+                <div
+                    class="text-2xl font-bold text-blue-600 flex items-center gap-2"
+                >
+                    🌍 Experiencias Turísticas
+                </div>
+                <div class="flex gap-3">
+                    <a
+                        href="crear-experiencia.html"
+                        class="text-sm px-3 py-2 text-gray-600 hover:text-blue-600"
+                        >Crear Experiencia</a
+                    >
+                    <a
+                        href="#"
+                        class="text-sm px-3 py-2 bg-blue-50 text-blue-700 rounded-lg font-medium border border-blue-100"
+                        >Mis Reservas</a
+                    >
+                </div>
+            </div>
+        </nav>
+
+        <main class="max-w-6xl mx-auto p-6">
+            <div
+                class="flex flex-col md:flex-row justify-between items-end mb-6 gap-4"
+            >
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-800">
+                        Panel de Reservas 📅
+                    </h1>
+                    <p class="text-gray-600 mt-1">
+                        Gestiona las reservas de tus experiencias turísticas.
+                    </p>
+                </div>
+                <button
+                    onclick="descargarCSV()"
+                    class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow flex items-center gap-2 transition"
+                >
+                    <i class="fa-solid fa-file-csv"></i> Descargar Reporte
+                </button>
+            </div>
+
+            <div
+                class="bg-white p-4 rounded-xl shadow-sm mb-6 flex flex-wrap gap-4 items-end border border-gray-100"
+            >
+                <div>
+                    <label
+                        class="block text-xs font-bold text-gray-500 mb-1 uppercase"
+                        >Estado</label
+                    >
+                    <select
+                        id="filtroEstado"
+                        class="border rounded-lg px-3 py-2 text-sm bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none w-40"
+                    >
+                        <option value="">Todos</option>
+                        <option value="CONFIRMADA">✅ Confirmadas</option>
+                        <option value="CANCELADA">❌ Canceladas</option>
+                        <option value="COMPLETADA">🏁 Completadas</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label
+                        class="block text-xs font-bold text-gray-500 mb-1 uppercase"
+                        >Experiencia</label
+                    >
+                    <select
+                        id="filtroExperiencia"
+                        class="border rounded-lg px-3 py-2 text-sm bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none w-48"
+                    >
+                        <option value="">Todas mis experiencias</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label
+                        class="block text-xs font-bold text-gray-500 mb-1 uppercase"
+                        >Fecha Inicio</label
+                    >
+                    <input
+                        type="date"
+                        id="filtroFecha"
+                        class="border rounded-lg px-3 py-2 text-sm bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none"
+                    />
+                </div>
+
+                <button
+                    onclick="cargarReservas()"
+                    class="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition text-sm font-medium h-10"
+                >
+                    Filtrar
+                </button>
+            </div>
+
+            <div
+                class="bg-white rounded-xl shadow overflow-hidden border border-gray-100"
+            >
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead
+                            class="bg-gray-50 text-gray-600 uppercase text-xs tracking-wider border-b"
+                        >
+                            <tr>
+                                <th class="p-4">Visitante</th>
+                                <th class="p-4">Experiencia</th>
+                                <th class="p-4">Fecha</th>
+                                <th class="p-4 text-center">Cupos</th>
+                                <th class="p-4">Total</th>
+                                <th class="p-4">Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody
+                            id="tablaBody"
+                            class="divide-y divide-gray-100 text-sm text-gray-700"
+                        >
+                            <tr>
+                                <td
+                                    colspan="6"
+                                    class="p-8 text-center text-gray-400"
+                                >
+                                    Cargando reservas... ⏳
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div
+                    id="emptyState"
+                    class="hidden p-10 text-center flex flex-col items-center justify-center"
+                >
+                    <div class="text-4xl mb-2">🍃</div>
+                    <h3 class="text-lg font-medium text-gray-900">
+                        No hay reservas aún
+                    </h3>
+                    <p class="text-gray-500 text-sm">
+                        Prueba cambiando los filtros o espera a que lleguen
+                        clientes.
+                    </p>
+                </div>
+            </div>
+        </main>
+
+        <script>
+            const PROVEEDOR_ID = "691d25e4db3680f205f3a587";
+            const API_URL = "http://localhost:3002/api/reservas/mis-reservas";
+            const API_MIS_EXPERIENCIAS =
+                "http://localhost:3002/api/experiencias/mis-experiencias";
+
+            let reservasData = [];
+
+            async function cargarReservas() {
+                const tbody = document.getElementById("tablaBody");
+                const emptyState = document.getElementById("emptyState");
+                const estado = document.getElementById("filtroEstado").value;
+                const fecha = document.getElementById("filtroFecha").value;
+                const experienciaId =
+                    document.getElementById("filtroExperiencia").value;
+
+                const params = new URLSearchParams({
+                    proveedorId: "691d25e4db3680f205f3a587",
+                });
+                if (estado) params.append("estado", estado);
+                if (fecha) params.append("fechaInicio", fecha);
+                if (experienciaId)
+                    params.append("experienciaId", experienciaId);
+
+                try {
+                    tbody.innerHTML =
+                        '<tr><td colspan="6" class="p-8 text-center text-gray-400">Cargando...</td></tr>';
+
+                    const response = await fetch(`${API_URL}?${params}`);
+                    const result = await response.json();
+
+                    if (result.success) {
+                        reservasData = result.data;
+                        renderTable(reservasData);
+                    } else {
+                        alert("Error al cargar: " + result.message);
+                    }
+                } catch (error) {
+                    console.error(error);
+                    tbody.innerHTML =
+                        '<tr><td colspan="6" class="p-4 text-center text-red-500">Error de conexión con el servidor</td></tr>';
+                }
+            }
+
+            async function cargarOpcionesExperiencias() {
+                try {
+                    const response = await fetch(
+                        `${API_MIS_EXPERIENCIAS}?proveedorId=${PROVEEDOR_ID}`,
+                    );
+                    const result = await response.json();
+
+                    if (result.success) {
+                        const select =
+                            document.getElementById("filtroExperiencia");
+                        result.data.forEach((exp) => {
+                            const option = document.createElement("option");
+                            option.value = exp._id;
+                            option.textContent = exp.nombre;
+                            select.appendChild(option);
+                        });
+                    }
+                } catch (error) {
+                    console.error(
+                        "Error cargando experiencias para el filtro",
+                        error,
+                    );
+                }
+            }
+
+            function renderTable(data) {
+                const tbody = document.getElementById("tablaBody");
+                const emptyState = document.getElementById("emptyState");
+                tbody.innerHTML = "";
+
+                if (data.length === 0) {
+                    tbody.classList.add("hidden");
+                    emptyState.classList.remove("hidden");
+                    return;
+                }
+
+                tbody.classList.remove("hidden");
+                emptyState.classList.add("hidden");
+
+                data.forEach((reserva) => {
+                    const fechaObj = new Date(reserva.fechaExperiencia);
+                    const fechaLegible = fechaObj.toLocaleDateString("es-MX", {
+                        weekday: "short",
+                        day: "numeric",
+                        month: "short",
+                    });
+                    const horaLegible = fechaObj.toLocaleTimeString("es-MX", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                    });
+
+                    let badgeColor = "bg-gray-100 text-gray-800";
+                    if (reserva.estado === "CONFIRMADA")
+                        badgeColor =
+                            "bg-green-100 text-green-700 border border-green-200";
+                    if (reserva.estado === "CANCELADA")
+                        badgeColor =
+                            "bg-red-50 text-red-600 border border-red-100";
+
+                    const row = `
+                    <tr class="hover:bg-blue-50 transition duration-150">
+                        <td class="p-4">
+                            <div class="font-bold text-gray-900">${reserva.nombreVisitante || "Anónimo"}</div>
+                            <div class="text-xs text-gray-500">${reserva.emailVisitante}</div>
+                        </td>
+                        <td class="p-4">
+                            <div class="text-sm font-medium">${reserva.nombreExperiencia}</div>
+                            <div class="text-xs text-gray-400 text-ellipsis overflow-hidden w-32 whitespace-nowrap">📍 ${reserva.ubicacionExperiencia || "Remoto"}</div>
+                        </td>
+                        <td class="p-4">
+                            <div class="text-sm">${fechaLegible}</div>
+                            <div class="text-xs text-gray-500">${horaLegible}</div>
+                        </td>
+                        <td class="p-4 text-center font-semibold text-gray-700">
+                            ${reserva.cantidadPersonas} 👤
+                        </td>
+                        <td class="p-4 font-bold text-blue-600">
+                            $${reserva.totalCompra}
+                        </td>
+                        <td class="p-4">
+                            <span class="px-3 py-1 rounded-full text-xs font-semibold ${badgeColor}">
+                                ${reserva.estado}
+                            </span>
+                        </td>
+                    </tr>
+                `;
+                    tbody.innerHTML += row;
+                });
+            }
+
+            function descargarCSV() {
+                if (reservasData.length === 0) {
+                    alert("No hay datos para exportar");
+                    return;
+                }
+
+                let csvContent = "data:text/csv;charset=utf-8,";
+                csvContent +=
+                    "ID Reserva,Visitante,Email,Experiencia,Fecha,Personas,Total,Estado\n";
+
+                reservasData.forEach((r) => {
+                    const row = [
+                        r._id,
+                        r.nombreVisitante,
+                        r.emailVisitante,
+                        `"${r.nombreExperiencia}"`, // Comillas por si tiene comas
+                        r.fechaExperiencia,
+                        r.cantidadPersonas,
+                        r.totalCompra,
+                        r.estado,
+                    ].join(",");
+                    csvContent += row + "\n";
+                });
+
+                const encodedUri = encodeURI(csvContent);
+                const link = document.createElement("a");
+                link.setAttribute("href", encodedUri);
+                link.setAttribute("download", "reporte_reservas.csv");
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+
+            document.addEventListener("DOMContentLoaded", () => {
+                cargarOpcionesExperiencias();
+                cargarReservas();
+            });
+        </script>
+    </body>
+</html>

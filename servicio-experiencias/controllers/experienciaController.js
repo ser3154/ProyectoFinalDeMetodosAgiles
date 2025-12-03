@@ -73,7 +73,7 @@ const getExperiencia = async (req, res) => {
     }
 
     if (Array.isArray(experiencia.fotos)) {
-      experiencia.fotos = experiencia.fotos.map(foto => `${baseUrl}/${foto}`);
+      experiencia.fotos = experiencia.fotos.map((foto) => `${baseUrl}/${foto}`);
     }
 
     res.json({
@@ -89,8 +89,26 @@ const getExperiencia = async (req, res) => {
   }
 };
 
+const getExperienciasPorProveedor = async (req, res) => {
+  try {
+    const { proveedorId } = req.query;
+
+    const experiencias = await Experiencia.find({ proveedorId: proveedorId });
+
+    res.json({
+      success: true,
+      data: experiencias,
+    });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ success: false, message: "Error al obtener experiencias" });
+  }
+};
+
 module.exports = {
   registrarExperiencia,
   getExperiencias,
   getExperiencia,
+  getExperienciasPorProveedor,
 };

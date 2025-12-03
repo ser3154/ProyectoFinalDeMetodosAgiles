@@ -31,4 +31,14 @@ router.get("/all", experienciaController.getExperiencias);
  */
 router.get("/encontrar", experienciaController.getExperiencia);
 
+/**
+ * @route   GET /api/experiencias/mis-experiencias
+ * @desc    Obtener todas las experiencias de un proveedor
+ * @access  Public
+ */
+router.get(
+  "/mis-experiencias",
+  experienciaController.getExperienciasPorProveedor,
+);
+
 module.exports = router;

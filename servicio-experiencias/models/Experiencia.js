@@ -46,6 +46,16 @@ const experienciaSchema = new mongoose.Schema({
     type: [String],
     validate: [(array) => array.length <= 3, "Máximo 3 imágenes permitidas"],
   },
+
+  proveedorId: {
+    type: String,
+    required: true,
+    index: true,
+  },
+
+  nombreProveedor: {
+    type: String,
+  },
 });
 
 module.exports = mongoose.model("Experiencia", experienciaSchema);

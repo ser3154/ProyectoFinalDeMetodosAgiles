@@ -7,6 +7,9 @@ const connectDB = require("./config/database");
 
 const experienciaRoutes = require("./routes/experienciasRoutes");
 
+// paypal
+const paypalRoutes = require("./routes/paypalRoutes");
+
 const app = express();
 const PORT = process.env.PORT || 3002;
 
@@ -15,6 +18,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
+// paypal
+app.use("/api/paypal", paypalRoutes);
 
 app.use("/api/experiencias", experienciaRoutes);
 

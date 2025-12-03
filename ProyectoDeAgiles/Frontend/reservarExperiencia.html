@@ -512,348 +512,204 @@
     </div>
 
     <script>
-        // Variables globales
-        let reservationTimer = 600; // 10 minutos en segundos
-        let timerInterval;
-        let reservedSpots = 0;
-        const maxCapacity = 12;
-        let availableSpots = 8;
-        const pricePerPerson = 1500;
+    // Variables globales
+    let reservationTimer = 600; // 10 minutos
+    let timerInterval;
+    let reservedSpots = 0;
+    const maxCapacity = 12;
+    let availableSpots = 8;
+    const pricePerPerson = 1500; // Precio base
+
+    // Inicializar la página
+    document.addEventListener('DOMContentLoaded', function() {
+        initializeReservation();
+        updateReservationSummary();
+        startReservationTimer();
         
-        // Inicializar la página
-        document.addEventListener('DOMContentLoaded', function() {
-            initializeReservation();
+        // Listeners básicos
+        document.getElementById('incrementPeople').addEventListener('click', incrementPeople);
+        document.getElementById('decrementPeople').addEventListener('click', decrementPeople);
+        document.getElementById('experienceDate').addEventListener('change', updateAvailability);
+        document.getElementById('cancelReservation').addEventListener('click', cancelReservation);
+        
+        // --- CAMBIO CLAVE: El botón ahora inicia el flujo real ---
+        document.getElementById('proceedToPayment').addEventListener('click', iniciarProcesoPago);
+    });
+
+    // Inicializar la reserva
+    function initializeReservation() {
+        document.getElementById('availableSpots').textContent = availableSpots;
+        document.getElementById('totalCapacity').textContent = maxCapacity;
+        document.getElementById('maxPeople').textContent = availableSpots;
+        document.getElementById('peopleCount').max = availableSpots;
+        updateAvailabilityMessage();
+    }
+
+    // --- NUEVA FUNCIÓN: Conexión con el Backend ---
+    async function iniciarProcesoPago(e) {
+        e.preventDefault();
+
+        // 1. Validaciones del formulario (Mantenemos tu validación original)
+        const fullName = document.getElementById('fullName').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const phone = document.getElementById('phone').value.trim();
+        
+        if (!fullName || !email || !phone) {
+            alert("Por favor completa toda la información de contacto antes de proceder al pago.");
+            // Hacemos scroll hacia el formulario para que el usuario vea qué falta
+            document.getElementById('fullName').focus();
+            return;
+        }
+
+        // 2. Validar cupos
+        const peopleCount = parseInt(document.getElementById('peopleCount').value);
+        if (peopleCount > availableSpots) {
+            document.getElementById('availabilityError').classList.remove('hidden');
+            return;
+        }
+
+        // 3. Preparar datos para enviar
+        // Obtenemos el precio total limpio (sin comas ni símbolos)
+        const totalPagar = peopleCount * pricePerPerson;
+        const nombreExperiencia = "Reserva Tour Desierto - " + document.getElementById('experienceDate').value;
+
+        // 4. Feedback visual (Deshabilitar botón)
+        const btn = document.getElementById('proceedToPayment');
+        const textoOriginal = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Conectando con PayPal...';
+        btn.disabled = true;
+
+        try {
+            // 5. Llamada al Backend
+            const response = await fetch('/api/paypal/pay', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    nombre: nombreExperiencia,
+                    costo: totalPagar.toString(), // Enviamos el total calculado
+                    currency: 'MXN' // Asegúrate de que tu backend acepte esto o cámbialo a USD
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.approvalUrl) {
+                // 6. REDIRECCIÓN A PAYPAL
+                window.location.href = data.approvalUrl;
+            } else {
+                alert('Error al generar la orden de pago. Intenta de nuevo.');
+                btn.innerHTML = textoOriginal;
+                btn.disabled = false;
+            }
+
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Hubo un error de conexión con el servidor.');
+            btn.innerHTML = textoOriginal;
+            btn.disabled = false;
+        }
+    }
+
+    // --- FUNCIONES DE LÓGICA DE NEGOCIO (Sin cambios importantes) ---
+
+    function updateAvailability() {
+        const date = document.getElementById('experienceDate').value;
+        // Simulación de disponibilidad (igual que antes)
+        if (date === '2025-11-10') availableSpots = 8;
+        else if (date === '2025-11-11') availableSpots = 3;
+        else if (date === '2025-11-12') availableSpots = 0;
+        else availableSpots = 5;
+        
+        document.getElementById('availableSpots').textContent = availableSpots;
+        document.getElementById('maxPeople').textContent = availableSpots;
+        
+        const peopleCount = parseInt(document.getElementById('peopleCount').value);
+        if (peopleCount > availableSpots) {
+            document.getElementById('peopleCount').value = availableSpots > 0 ? availableSpots : 1;
+        }
+        updateAvailabilityMessage();
+        updateReservationSummary();
+    }
+
+    function updateAvailabilityMessage() {
+        const msg = document.getElementById('availabilityMessage');
+        if (availableSpots === 0) {
+            msg.textContent = "No hay cupos disponibles";
+            msg.className = "text-sm mt-2 text-red-600 font-medium";
+        } else if (availableSpots <= 3) {
+            msg.textContent = `¡Solo quedan ${availableSpots} cupos!`;
+            msg.className = "text-sm mt-2 text-amber-600 font-medium";
+        } else {
+            msg.textContent = "Hay cupos disponibles";
+            msg.className = "text-sm mt-2 text-green-600 font-medium";
+        }
+        document.getElementById('peopleCount').max = availableSpots;
+    }
+
+    function incrementPeople() {
+        const input = document.getElementById('peopleCount');
+        let val = parseInt(input.value);
+        if (val < availableSpots) {
+            input.value = val + 1;
             updateReservationSummary();
-            startReservationTimer();
-            
-            // Manejar clics en botones de incremento/decremento
-            document.getElementById('incrementPeople').addEventListener('click', incrementPeople);
-            document.getElementById('decrementPeople').addEventListener('click', decrementPeople);
-            
-            // Manejar cambio en fecha
-            document.getElementById('experienceDate').addEventListener('change', updateAvailability);
-            
-            // Manejar botones principales
-            document.getElementById('proceedToPayment').addEventListener('click', openPaymentModal);
-            document.getElementById('cancelReservation').addEventListener('click', cancelReservation);
-            
-            // Formatear inputs de tarjeta
-            document.getElementById('cardNumber').addEventListener('input', formatCardNumber);
-            document.getElementById('cardExpiry').addEventListener('input', formatCardExpiry);
-            document.getElementById('cardCVV').addEventListener('input', formatCardCVV);
-            
-            // Cerrar modales haciendo clic fuera
-            document.getElementById('paymentModal').addEventListener('click', function(e) {
-                if (e.target === this) closePaymentModal();
-            });
-            
-            document.getElementById('confirmationModal').addEventListener('click', function(e) {
-                if (e.target === this) closeConfirmationModal();
-            });
-        });
-        
-        // Inicializar la reserva
-        function initializeReservation() {
-            // Actualizar cupos disponibles
-            document.getElementById('availableSpots').textContent = availableSpots;
-            document.getElementById('totalCapacity').textContent = maxCapacity;
-            document.getElementById('maxPeople').textContent = availableSpots;
-            
-            // Configurar máximo en el input de personas
-            document.getElementById('peopleCount').max = availableSpots;
-            
-            // Mostrar mensaje de disponibilidad
-            updateAvailabilityMessage();
         }
-        
-        // Actualizar disponibilidad según fecha seleccionada
-        function updateAvailability() {
-            const date = document.getElementById('experienceDate').value;
-            
-            // Simular disponibilidad variable por fecha
-            // En una implementación real, esto vendría de una API
-            if (date === '2025-11-10') {
-                availableSpots = 8;
-            } else if (date === '2025-11-11') {
-                availableSpots = 3;
-            } else if (date === '2025-11-12') {
-                availableSpots = 0;
-            } else {
-                availableSpots = 5; // Valor por defecto para otras fechas
-            }
-            
-            document.getElementById('availableSpots').textContent = availableSpots;
-            document.getElementById('maxPeople').textContent = availableSpots;
-            
-            // Ajustar el número de personas si es necesario
-            const peopleCount = parseInt(document.getElementById('peopleCount').value);
-            if (peopleCount > availableSpots) {
-                document.getElementById('peopleCount').value = availableSpots;
-                document.getElementById('availabilityError').classList.remove('hidden');
-            } else {
-                document.getElementById('availabilityError').classList.add('hidden');
-            }
-            
-            updateAvailabilityMessage();
+    }
+
+    function decrementPeople() {
+        const input = document.getElementById('peopleCount');
+        let val = parseInt(input.value);
+        if (val > 1) {
+            input.value = val - 1;
             updateReservationSummary();
         }
+    }
+
+    function updateReservationSummary() {
+        const peopleCount = parseInt(document.getElementById('peopleCount').value) || 0;
+        const date = document.getElementById('experienceDate').value;
+        const dateObj = new Date(date);
+        const formattedDate = dateObj.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' });
         
-        // Actualizar mensaje de disponibilidad
-        function updateAvailabilityMessage() {
-            const availabilityMessage = document.getElementById('availabilityMessage');
-            const peopleCount = parseInt(document.getElementById('peopleCount').value);
-            
-            if (availableSpots === 0) {
-                availabilityMessage.textContent = "No hay cupos disponibles para esta fecha";
-                availabilityMessage.classList.remove('text-green-600');
-                availabilityMessage.classList.add('text-red-600');
-            } else if (availableSpots <= 3) {
-                availabilityMessage.textContent = `¡Solo quedan ${availableSpots} cupos!`;
-                availabilityMessage.classList.remove('text-green-600');
-                availabilityMessage.classList.add('text-amber-600');
-            } else {
-                availabilityMessage.textContent = "Hay cupos disponibles";
-                availabilityMessage.classList.remove('text-amber-600', 'text-red-600');
-                availabilityMessage.classList.add('text-green-600');
-            }
-            
-            // Actualizar el máximo en el input
-            document.getElementById('peopleCount').max = availableSpots;
-        }
+        const total = peopleCount * pricePerPerson;
+        const formattedTotal = total.toLocaleString('es-MX');
+
+        document.getElementById('summaryDate').textContent = formattedDate;
+        document.getElementById('summaryPeople').textContent = `${peopleCount} ${peopleCount === 1 ? 'persona' : 'personas'}`;
+        document.getElementById('summaryTotal').textContent = `$${formattedTotal} MXN`;
         
-        // Incrementar número de personas
-        function incrementPeople() {
-            const peopleInput = document.getElementById('peopleCount');
-            let value = parseInt(peopleInput.value);
-            
-            if (value < availableSpots) {
-                peopleInput.value = value + 1;
-                document.getElementById('availabilityError').classList.add('hidden');
-                updateAvailabilityMessage();
-                updateReservationSummary();
-            }
-        }
-        
-        // Decrementar número de personas
-        function decrementPeople() {
-            const peopleInput = document.getElementById('peopleCount');
-            let value = parseInt(peopleInput.value);
-            
-            if (value > 1) {
-                peopleInput.value = value - 1;
-                updateAvailabilityMessage();
-                updateReservationSummary();
-            }
-        }
-        
-        // Actualizar resumen de la reserva
-        function updateReservationSummary() {
-            const peopleCount = parseInt(document.getElementById('peopleCount').value);
-            const date = document.getElementById('experienceDate').value;
-            
-            // Formatear fecha
-            const dateObj = new Date(date);
-            const formattedDate = dateObj.toLocaleDateString('es-ES', { 
-                day: 'numeric', 
-                month: 'short', 
-                year: 'numeric' 
-            });
-            
-            // Calcular total
-            const total = peopleCount * pricePerPerson;
-            const formattedTotal = total.toLocaleString('es-MX');
-            
-            // Actualizar resumen principal
-            document.getElementById('summaryDate').textContent = formattedDate;
-            document.getElementById('summaryPeople').textContent = `${peopleCount} ${peopleCount === 1 ? 'persona' : 'personas'}`;
-            document.getElementById('summaryTotal').textContent = `$${formattedTotal} MXN`;
-            
-            // Actualizar resumen rápido
-            document.getElementById('quickSummaryDate').textContent = formattedDate;
+        // Si tienes elementos de "Resumen Rápido" en el HTML
+        const quickDate = document.getElementById('quickSummaryDate');
+        if(quickDate) {
+            quickDate.textContent = formattedDate;
             document.getElementById('quickSummaryPeople').textContent = peopleCount;
             document.getElementById('quickSummaryTotal').textContent = `$${formattedTotal} MXN`;
-            
-            // Actualizar monto en modal de pago
-            document.getElementById('paymentAmount').textContent = `$${formattedTotal} MXN`;
-            document.getElementById('paymentPeople').textContent = `${peopleCount} ${peopleCount === 1 ? 'persona' : 'personas'}`;
         }
-        
-        // Temporizador de reserva
-        function startReservationTimer() {
-            clearInterval(timerInterval);
-            reservationTimer = 600; // Reiniciar a 10 minutos
-            
-            timerInterval = setInterval(function() {
-                reservationTimer--;
-                
-                const minutes = Math.floor(reservationTimer / 60);
-                const seconds = reservationTimer % 60;
-                
-                document.getElementById('reservationTimer').textContent = 
-                    `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-                
-                // Si el tiempo se agota
-                if (reservationTimer <= 0) {
-                    clearInterval(timerInterval);
-                    showReservationExpired();
-                }
-            }, 1000);
-        }
-        
-        // Mostrar que la reserva expiró
-        function showReservationExpired() {
-            alert("Tu reserva ha expirado. Los cupos han sido liberados. Por favor, inicia una nueva reserva.");
-            // En una implementación real, redirigirías o reiniciarías el proceso
-        }
-        
-        // Abrir modal de pago
-        function openPaymentModal() {
-            // Validar información básica antes de abrir el modal
-            const fullName = document.getElementById('fullName').value.trim();
-            const email = document.getElementById('email').value.trim();
-            const phone = document.getElementById('phone').value.trim();
-            
-            if (!fullName || !email || !phone) {
-                alert("Por favor completa toda la información de contacto antes de proceder al pago.");
-                return;
+    }
+
+    function startReservationTimer() {
+        clearInterval(timerInterval);
+        reservationTimer = 600; 
+        timerInterval = setInterval(() => {
+            reservationTimer--;
+            const m = Math.floor(reservationTimer / 60);
+            const s = reservationTimer % 60;
+            const timerDisplay = document.getElementById('reservationTimer');
+            if(timerDisplay) {
+                timerDisplay.textContent = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
             }
-            
-            // Validar que haya cupos disponibles
-            const peopleCount = parseInt(document.getElementById('peopleCount').value);
-            if (peopleCount > availableSpots) {
-                document.getElementById('availabilityError').classList.remove('hidden');
-                return;
-            }
-            
-            // Simular reserva temporal de cupos
-            reservedSpots = peopleCount;
-            availableSpots -= reservedSpots;
-            document.getElementById('availableSpots').textContent = availableSpots;
-            document.getElementById('maxPeople').textContent = availableSpots;
-            
-            // Mostrar modal de pago
-            document.getElementById('paymentModal').classList.remove('hidden');
-            document.getElementById('paymentModal').classList.add('flex');
-            
-            // Reiniciar temporizador (en una implementación real, esto se haría después de reservar los cupos)
-            startReservationTimer();
-        }
-        
-        // Cerrar modal de pago
-        function closePaymentModal() {
-            document.getElementById('paymentModal').classList.add('hidden');
-            document.getElementById('paymentModal').classList.remove('flex');
-            
-            // Liberar cupos reservados si se cancela el pago
-            if (reservedSpots > 0) {
-                availableSpots += reservedSpots;
-                reservedSpots = 0;
-                document.getElementById('availableSpots').textContent = availableSpots;
-                document.getElementById('maxPeople').textContent = availableSpots;
-                updateAvailabilityMessage();
-            }
-            
-            // Limpiar formulario de pago
-            document.getElementById('cardNumber').value = '';
-            document.getElementById('cardExpiry').value = '';
-            document.getElementById('cardCVV').value = '';
-            document.getElementById('cardName').value = '';
-            document.getElementById('saveCard').checked = false;
-        }
-        
-        // Procesar pago
-        function processPayment() {
-            // Validar datos de tarjeta (simulación básica)
-            const cardNumber = document.getElementById('cardNumber').value.replace(/\s/g, '');
-            const cardExpiry = document.getElementById('cardExpiry').value;
-            const cardCVV = document.getElementById('cardCVV').value;
-            const cardName = document.getElementById('cardName').value.trim();
-            
-            if (!cardNumber || cardNumber.length < 16) {
-                alert("Por favor ingresa un número de tarjeta válido");
-                return;
-            }
-            
-            if (!cardExpiry || cardExpiry.length < 5) {
-                alert("Por favor ingresa una fecha de expiración válida (MM/AA)");
-                return;
-            }
-            
-            if (!cardCVV || cardCVV.length < 3) {
-                alert("Por favor ingresa un CVV válido");
-                return;
-            }
-            
-            if (!cardName) {
-                alert("Por favor ingresa el nombre como aparece en la tarjeta");
-                return;
-            }
-            
-            // Simular procesamiento de pago
-            document.getElementById('paymentModal').classList.add('hidden');
-            document.getElementById('paymentModal').classList.remove('flex');
-            
-            // Mostrar mensaje de procesamiento
-            setTimeout(function() {
-                // Mostrar modal de confirmación
-                document.getElementById('confirmationModal').classList.remove('hidden');
-                document.getElementById('confirmationModal').classList.add('flex');
-                
-                // Detener temporizador
+            if (reservationTimer <= 0) {
                 clearInterval(timerInterval);
-            }, 1000);
-        }
-        
-        // Cerrar modal de confirmación
-        function closeConfirmationModal() {
-            document.getElementById('confirmationModal').classList.add('hidden');
-            document.getElementById('confirmationModal').classList.remove('flex');
-            
-            // Redirigir a la página principal (simulación)
+                alert("Tu reserva ha expirado. Por favor recarga la página.");
+                location.reload();
+            }
+        }, 1000);
+    }
+
+    function cancelReservation() {
+        if (confirm("¿Estás seguro de que quieres cancelar?")) {
             window.location.href = "index.html";
         }
-        
-        // Cancelar reserva
-        function cancelReservation() {
-            if (confirm("¿Estás seguro de que quieres cancelar esta reserva? Se liberarán los cupos reservados.")) {
-                // Liberar cupos reservados
-                if (reservedSpots > 0) {
-                    availableSpots += reservedSpots;
-                    reservedSpots = 0;
-                    document.getElementById('availableSpots').textContent = availableSpots;
-                    document.getElementById('maxPeople').textContent = availableSpots;
-                }
-                
-                // Detener temporizador
-                clearInterval(timerInterval);
-                
-                // Redirigir a la página principal
-                window.location.href = "index.html";
-            }
-        }
-        
-        // Formatear número de tarjeta
-        function formatCardNumber(e) {
-            let value = e.target.value.replace(/\D/g, '');
-            value = value.replace(/(\d{4})/g, '$1 ').trim();
-            value = value.substring(0, 19); // Máximo 16 dígitos + 3 espacios
-            e.target.value = value;
-        }
-        
-        // Formatear fecha de expiración
-        function formatCardExpiry(e) {
-            let value = e.target.value.replace(/\D/g, '');
-            if (value.length >= 2) {
-                value = value.substring(0, 2) + '/' + value.substring(2, 4);
-            }
-            e.target.value = value.substring(0, 5);
-        }
-        
-        // Formatear CVV
-        function formatCardCVV(e) {
-            let value = e.target.value.replace(/\D/g, '');
-            e.target.value = value.substring(0, 3);
-        }
-    </script>
+    }
+</script>
 </body>
 </html>

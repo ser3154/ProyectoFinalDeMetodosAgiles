@@ -13,6 +13,7 @@ const registrarExperiencia = async (req, res) => {
       cupo: req.body.cupo,
       estado: req.body.estado,
       fotos: rutasImagenes,
+      proveedorId: req.body.proveedorId,
     });
 
     await experiencia.save();

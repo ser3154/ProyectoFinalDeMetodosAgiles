@@ -278,6 +278,12 @@
                         return;
                     }
 
+                    const userString = localStorage.getItem("user");
+                    if (!userString) {
+                        window.location.href = "login.html";
+                    }
+                    const usuarioObj = JSON.parse(userString);
+
                     const formData = new FormData();
                     formData.append("nombre", nombre);
                     formData.append("descripcion", descripcion);
@@ -286,6 +292,7 @@
                     formData.append("ubicacion", ubicacion);
                     formData.append("cupo", cupo);
                     formData.append("estado", "REVISION_PENDIENTE");
+                    formData.append("proveedorId", usuarioObj.id);
 
                     console.log(JSON.stringify(formData, null, 2));
 

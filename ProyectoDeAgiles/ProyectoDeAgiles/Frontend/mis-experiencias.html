@@ -9,6 +9,7 @@
             href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
             rel="stylesheet"
         />
+        <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
     </head>
     <body
         class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen font-sans"
@@ -24,7 +25,7 @@
                 </div>
                 <div class="flex gap-3">
                     <a
-                        href="crear-experiencia.html"
+                        href="crear-experiencias.html"
                         class="text-sm px-3 py-2 text-gray-600 hover:text-blue-600"
                         >Crear Experiencia</a
                     >
@@ -57,6 +58,22 @@
                 </button>
             </div>
 
+            <div class="flex gap-4 mb-6 border-b border-gray-200">
+                <button
+                    id="btnVistaLista"
+                    onclick="cambiarVista('lista')"
+                    class="pb-2 border-b-2 border-blue-600 text-blue-600 font-medium px-2 transition"
+                >
+                    📋 Lista
+                </button>
+                <button
+                    id="btnVistaCalendario"
+                    onclick="cambiarVista('calendario')"
+                    class="pb-2 border-b-2 border-transparent text-gray-500 hover:text-gray-700 font-medium px-2 transition"
+                >
+                    📅 Calendario
+                </button>
+            </div>
             <div
                 class="bg-white p-4 rounded-xl shadow-sm mb-6 flex flex-wrap gap-4 items-end border border-gray-100"
             >
@@ -110,56 +127,73 @@
             </div>
 
             <div
+                id="vistaTabla"
                 class="bg-white rounded-xl shadow overflow-hidden border border-gray-100"
             >
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
-                        <thead
-                            class="bg-gray-50 text-gray-600 uppercase text-xs tracking-wider border-b"
-                        >
-                            <tr>
-                                <th class="p-4">Visitante</th>
-                                <th class="p-4">Experiencia</th>
-                                <th class="p-4">Fecha</th>
-                                <th class="p-4 text-center">Cupos</th>
-                                <th class="p-4">Total</th>
-                                <th class="p-4">Estado</th>
-                            </tr>
-                        </thead>
-                        <tbody
-                            id="tablaBody"
-                            class="divide-y divide-gray-100 text-sm text-gray-700"
-                        >
-                            <tr>
-                                <td
-                                    colspan="6"
-                                    class="p-8 text-center text-gray-400"
-                                >
-                                    Cargando reservas... ⏳
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-
                 <div
-                    id="emptyState"
-                    class="hidden p-10 text-center flex flex-col items-center justify-center"
+                    class="bg-white rounded-xl shadow overflow-hidden border border-gray-100"
                 >
-                    <div class="text-4xl mb-2">🍃</div>
-                    <h3 class="text-lg font-medium text-gray-900">
-                        No hay reservas aún
-                    </h3>
-                    <p class="text-gray-500 text-sm">
-                        Prueba cambiando los filtros o espera a que lleguen
-                        clientes.
-                    </p>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead
+                                class="bg-gray-50 text-gray-600 uppercase text-xs tracking-wider border-b"
+                            >
+                                <tr>
+                                    <th class="p-4">Visitante</th>
+                                    <th class="p-4">Experiencia</th>
+                                    <th class="p-4">Fecha</th>
+                                    <th class="p-4 text-center">Cupos</th>
+                                    <th class="p-4">Total</th>
+                                    <th class="p-4">Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody
+                                id="tablaBody"
+                                class="divide-y divide-gray-100 text-sm text-gray-700"
+                            >
+                                <tr>
+                                    <td
+                                        colspan="6"
+                                        class="p-8 text-center text-gray-400"
+                                    >
+                                        Cargando reservas... ⏳
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div
+                        id="emptyState"
+                        class="hidden p-10 text-center flex flex-col items-center justify-center"
+                    >
+                        <h3 class="text-lg font-medium text-gray-900">
+                            No hay reservas aún
+                        </h3>
+                        <p class="text-gray-500 text-sm">
+                            Prueba cambiando los filtros o espera a que lleguen
+                            clientes.
+                        </p>
+                    </div>
                 </div>
+            </div>
+            <div
+                id="vistaCalendario"
+                class="hidden bg-white p-6 rounded-xl shadow border border-gray-100"
+            >
+                <div id="calendar"></div>
             </div>
         </main>
 
         <script>
-            const PROVEEDOR_ID = "691d25e4db3680f205f3a587";
+            const userString = localStorage.getItem("user");
+            if (!userString) {
+                window.location.href = "login.html";
+            }
+            const usuarioObj = JSON.parse(userString);
+
+            let calendar = null;
+            const PROVEEDOR_ID = usuarioObj.id;
             const API_URL = "http://localhost:3002/api/reservas/mis-reservas";
             const API_MIS_EXPERIENCIAS =
                 "http://localhost:3002/api/experiencias/mis-experiencias";
@@ -175,7 +209,7 @@
                     document.getElementById("filtroExperiencia").value;
 
                 const params = new URLSearchParams({
-                    proveedorId: "691d25e4db3680f205f3a587",
+                    proveedorId: PROVEEDOR_ID,
                 });
                 if (estado) params.append("estado", estado);
                 if (fecha) params.append("fechaInicio", fecha);
@@ -192,6 +226,12 @@
                     if (result.success) {
                         reservasData = result.data;
                         renderTable(reservasData);
+                        if (calendar) {
+                            calendar.removeAllEvents();
+                            const nuevosEventos =
+                                mapearReservasAEventos(reservasData);
+                            calendar.addEventSource(nuevosEventos);
+                        }
                     } else {
                         alert("Error al cargar: " + result.message);
                     }
@@ -307,7 +347,7 @@
                         r._id,
                         r.nombreVisitante,
                         r.emailVisitante,
-                        `"${r.nombreExperiencia}"`, // Comillas por si tiene comas
+                        `"${r.nombreExperiencia}"`,
                         r.fechaExperiencia,
                         r.cantidadPersonas,
                         r.totalCompra,
@@ -323,6 +363,100 @@
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
+            }
+
+            function cambiarVista(vista) {
+                const divTabla = document.querySelector(
+                    ".bg-white.rounded-xl.shadow",
+                );
+
+                const contenedorTabla = document.getElementById("vistaTabla");
+                const contenedorCal =
+                    document.getElementById("vistaCalendario");
+
+                const btnLista = document.getElementById("btnVistaLista");
+                const btnCal = document.getElementById("btnVistaCalendario");
+
+                if (vista === "lista") {
+                    contenedorTabla.classList.remove("hidden");
+                    contenedorCal.classList.add("hidden");
+
+                    btnLista.className =
+                        "pb-2 border-b-2 border-blue-600 text-blue-600 font-medium px-2 transition";
+                    btnCal.className =
+                        "pb-2 border-b-2 border-transparent text-gray-500 hover:text-gray-700 font-medium px-2 transition";
+                } else {
+                    contenedorTabla.classList.add("hidden");
+                    contenedorCal.classList.remove("hidden");
+
+                    btnLista.className =
+                        "pb-2 border-b-2 border-transparent text-gray-500 hover:text-gray-700 font-medium px-2 transition";
+                    btnCal.className =
+                        "pb-2 border-b-2 border-blue-600 text-blue-600 font-medium px-2 transition";
+
+                    setTimeout(() => {
+                        inicializarCalendario();
+                    }, 100);
+                }
+            }
+
+            function inicializarCalendario() {
+                if (calendar) {
+                    calendar.removeAllEvents();
+                    const eventos = mapearReservasAEventos(reservasData);
+                    calendar.addEventSource(eventos);
+                    calendar.render();
+                    return;
+                }
+
+                const calendarEl = document.getElementById("calendar");
+
+                calendar = new FullCalendar.Calendar(calendarEl, {
+                    initialView: "dayGridMonth",
+                    locale: "es",
+                    headerToolbar: {
+                        left: "prev,next today",
+                        center: "title",
+                        right: "dayGridMonth,timeGridWeek",
+                    },
+                    buttonText: {
+                        today: "Hoy",
+                        month: "Mes",
+                        week: "Semana",
+                        day: "Día",
+                        list: "Lista",
+                    },
+                    events: mapearReservasAEventos(reservasData),
+
+                    eventClick: function (info) {
+                        alert(
+                            "Reserva de: " +
+                                info.event.title +
+                                "\nFecha: " +
+                                info.event.start.toLocaleString(),
+                        );
+                    },
+                });
+
+                calendar.render();
+            }
+
+            function mapearReservasAEventos(data) {
+                return data.map((reserva) => {
+                    let colorFondo = "#3b82f6";
+                    if (reserva.estado === "CANCELADA") colorFondo = "#ef4444";
+                    if (reserva.estado === "COMPLETADA") colorFondo = "#10b981";
+
+                    return {
+                        title: `${reserva.nombreVisitante} (${reserva.cantidadPersonas} pers.)`,
+                        start: reserva.fechaExperiencia,
+                        backgroundColor: colorFondo,
+                        borderColor: colorFondo,
+                        extendedProps: {
+                            precio: reserva.totalCompra,
+                        },
+                    };
+                });
             }
 
             document.addEventListener("DOMContentLoaded", () => {

@@ -12,7 +12,6 @@ const crearReserva = async (req, res) => {
   try {
     const { experienciaId, numPersonas, usuario } = req.body;
 
-    // Buscar la experiencia
     const experiencia = await Experiencia.findById(experienciaId);
     
     if (!experiencia) {
@@ -22,7 +21,6 @@ const crearReserva = async (req, res) => {
       });
     }
 
-    // Verificar cupos disponibles
     if (experiencia.cupo < numPersonas) {
       return res.status(400).json({
         success: false,
@@ -30,13 +28,9 @@ const crearReserva = async (req, res) => {
       });
     }
 
-    // Calcular precio total
     const precioTotal = experiencia.precio * numPersonas;
-
-    // Generar número de confirmación
     const numeroConfirmacion = generarNumeroConfirmacion();
 
-    // Crear la reserva
     const reserva = new Reserva({
       experiencia: experienciaId,
       usuario: {
@@ -55,12 +49,8 @@ const crearReserva = async (req, res) => {
 
     await reserva.save();
 
-    // Actualizar cupos de la experiencia
     experiencia.cupo -= numPersonas;
     await experiencia.save();
-
-    // En producción, aquí enviarías el email
-    // await enviarEmailConfirmacion(reserva);
 
     res.status(201).json({
       success: true,
@@ -115,7 +105,77 @@ const obtenerReserva = async (req, res) => {
   }
 };
 
+// NUEVA FUNCIONALIDAD: HU14 - Cancelar Reserva
+const cancelarReserva = async (req, res) => {
+  try {
+    const { numeroConfirmacion } = req.params;
+
+    // Buscar la reserva
+    const reserva = await Reserva.findOne({ numeroConfirmacion })
+      .populate("experiencia");
+
+    if (!reserva) {
+      return res.status(404).json({
+        success: false,
+        message: "Reserva no encontrada"
+      });
+    }
+
+    // VALIDACIÓN: Solo se pueden cancelar reservas con estado "CONFIRMADA"
+    if (reserva.estado !== "CONFIRMADA") {
+      return res.status(400).json({
+        success: false,
+        message: `No se puede cancelar una reserva con estado "${reserva.estado}". Solo se pueden cancelar reservas confirmadas.`
+      });
+    }
+
+    // Calcular tiempo hasta la experiencia
+    const fechaExperiencia = new Date(reserva.fecha);
+    const ahora = new Date();
+    const horasRestantes = (fechaExperiencia - ahora) / (1000 * 60 * 60);
+
+    // Política de cancelación: con más de 48 horas = reembolso 100%, menos = 50%
+    let porcentajeReembolso = 100;
+    if (horasRestantes < 48) {
+      porcentajeReembolso = 50;
+    }
+
+    const montoReembolso = (reserva.precioTotal * porcentajeReembolso) / 100;
+
+    // Actualizar estado de la reserva
+    reserva.estado = "CANCELADA";
+    await reserva.save();
+
+    // Liberar cupos en la experiencia
+    const experiencia = await Experiencia.findById(reserva.experiencia);
+    if (experiencia) {
+      experiencia.cupo += reserva.numPersonas;
+      await experiencia.save();
+    }
+
+    res.json({
+      success: true,
+      message: "Reserva cancelada exitosamente",
+      data: {
+        numeroConfirmacion: reserva.numeroConfirmacion,
+        estado: reserva.estado,
+        porcentajeReembolso,
+        montoReembolso,
+        cuposLiberados: reserva.numPersonas
+      }
+    });
+
+  } catch (error) {
+    console.error("Error al cancelar reserva:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error interno del servidor"
+    });
+  }
+};
+
 module.exports = {
   crearReserva,
-  obtenerReserva
+  obtenerReserva,
+  cancelarReserva
 };

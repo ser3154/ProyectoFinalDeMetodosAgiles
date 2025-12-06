@@ -75,85 +75,130 @@
     <script>
         const API_URL = 'http://localhost:3002/api';
         
-        // Obtener datos de la URL o localStorage
         const urlParams = new URLSearchParams(window.location.search);
-        const numeroConfirmacion = urlParams.get('numero') || localStorage.getItem('ultimaReserva');
+        const numeroConfirmacion = urlParams.get('numero');
+        const statusPago = urlParams.get('status');
+        const montoPago = urlParams.get('monto');
 
         async function cargarConfirmacion() {
             if (!numeroConfirmacion) {
-                document.body.innerHTML = '<div class="text-center mt-20"><p class="text-red-600">No se encontró información de reserva</p></div>';
+                document.body.innerHTML = `
+                    <div class="max-w-2xl mx-auto mt-20 p-6 bg-white rounded-xl shadow-lg text-center">
+                        <div class="text-red-500 text-5xl mb-4"><i class="fas fa-exclamation-circle"></i></div>
+                        <h2 class="text-2xl font-bold text-gray-800">No se encontró información</h2>
+                        <p class="text-gray-600 mt-2">No hay un código de reserva válido.</p>
+                        <a href="/" class="inline-block mt-4 text-blue-600 hover:underline">Volver al inicio</a>
+                    </div>`;
                 return;
             }
 
             try {
                 const response = await fetch(`${API_URL}/reservas/${numeroConfirmacion}`);
-                const data = await response.json();
-
-                if (data.success) {
-                    mostrarDetalles(data.data);
-                } else {
-                    alert('No se pudo cargar la confirmación');
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success) {
+                        mostrarDetalles(data.data);
+                        return;
+                    }
                 }
+
+                // si no hay datos en la BD, porque no gaurdo nada, checo igual si es un pago exitoso de paypal
+                if (statusPago === 'success') {
+                    console.log("Mostrando datos directos de PayPal (Modo Práctica)");
+                    mostrarDetallesPayPal();
+                } else {
+                    throw new Error("No se encontraron datos en API ni parámetros de PayPal");
+                }
+
             } catch (error) {
                 console.error('Error:', error);
-                alert('Error al cargar la confirmación');
+                if (statusPago === 'success') mostrarDetallesPayPal();
+                else alert('Error al cargar la confirmación.');
             }
         }
 
+        // muestra datos de la DB
         function mostrarDetalles(reserva) {
             document.getElementById('numero-confirmacion').textContent = reserva.numeroConfirmacion;
-
+            
+            // fecha
             const fecha = new Date(reserva.fecha).toLocaleDateString('es-MX', {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
+                weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
             });
 
+            renderizarHTML(
+                reserva.experiencia.nombre,
+                fecha,
+                reserva.experiencia.ubicacion,
+                reserva.numPersonas,
+                reserva.precioTotal,
+                reserva.proveedor
+            );
+        }
+
+        // muestra para ver que funciono el pago
+        function mostrarDetallesPayPal() {
+            document.getElementById('numero-confirmacion').textContent = numeroConfirmacion;
+
+            // datos random para ver
+            renderizarHTML(
+                "Experiencia Reservada",
+                new Date().toLocaleDateString('es-MX', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }),
+                "Destino Turístico", 
+                "1",
+                montoPago || "0.00",
+                { nombre: "PayPal Commerce", email: "pagos@tuproyecto.com" }
+            );
+        }
+
+        // Funcion que claramente me dio copilot
+        function renderizarHTML(nombre, fecha, ubicacion, personas, precio, proveedor) {
             document.getElementById('detalles-reserva').innerHTML = `
                 <div class="space-y-3">
                     <div class="flex justify-between">
                         <span class="text-gray-600">Experiencia:</span>
-                        <span class="font-semibold text-gray-900">${reserva.experiencia.nombre}</span>
+                        <span class="font-semibold text-gray-900">${nombre}</span>
                     </div>
                     <div class="flex justify-between">
                         <span class="text-gray-600">Fecha:</span>
-                        <span class="font-semibold text-gray-900">${fecha}</span>
+                        <span class="font-semibold text-gray-900 capitalize">${fecha}</span>
                     </div>
                     <div class="flex justify-between">
                         <span class="text-gray-600">Ubicación:</span>
-                        <span class="font-semibold text-gray-900">${reserva.experiencia.ubicacion}</span>
+                        <span class="font-semibold text-gray-900">${ubicacion}</span>
                     </div>
                     <div class="flex justify-between">
-                        <span class="text-gray-600">Número de personas:</span>
-                        <span class="font-semibold text-gray-900">${reserva.numPersonas}</span>
+                        <span class="text-gray-600">Personas:</span>
+                        <span class="font-semibold text-gray-900">${personas}</span>
                     </div>
                     <div class="flex justify-between pt-3 border-t">
                         <span class="text-gray-600 font-semibold">Precio total:</span>
-                        <span class="font-bold text-blue-600 text-xl">$${reserva.precioTotal.toFixed(2)}</span>
+                        <span class="font-bold text-blue-600 text-xl">$${parseFloat(precio).toFixed(2)} USD</span>
                     </div>
                 </div>
             `;
 
             document.getElementById('info-proveedor').innerHTML = `
-                <p><strong>Nombre:</strong> ${reserva.proveedor?.nombre || 'No disponible'}</p>
-                <p><strong>Email:</strong> ${reserva.proveedor?.email || 'No disponible'}</p>
+                <p><strong>Procesado por:</strong> ${proveedor?.nombre || 'Plataforma'}</p>
+                <p><strong>Contacto:</strong> ${proveedor?.email || 'soporte@tuproyecto.com'}</p>
             `;
         }
 
         function copiarNumero() {
             const numero = document.getElementById('numero-confirmacion').textContent;
             navigator.clipboard.writeText(numero).then(() => {
-                alert('Número de confirmación copiado al portapapeles');
+                const btn = document.querySelector('button[onclick="copiarNumero()"]');
+                const original = btn.innerHTML;
+                btn.innerHTML = '<span class="text-green-600 font-bold text-sm">¡Copiado!</span>';
+                setTimeout(() => btn.innerHTML = original, 2000);
             });
         }
 
         function descargarPDF() {
-            // En producción, esto llamaría a un endpoint que genera el PDF
             alert('La descarga del PDF estará disponible próximamente');
         }
 
-        // Cargar al iniciar
         cargarConfirmacion();
     </script>
 </body>

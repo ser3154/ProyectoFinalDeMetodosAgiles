@@ -1,8 +1,13 @@
 # ProyectoFinalDeMetodosAgiles
 Integrantes del equipo:
+
+
 -Servando Contreras 245578
+
 -Luis roberto 246853
+
 -Juventino Lopez 248547
+
 -Carlos Eduardo 247590
 
 Ejecucion: 
